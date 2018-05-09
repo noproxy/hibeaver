@@ -120,8 +120,17 @@ public class ModifyClassUtil {
         public void visit(int version, int access, String name,
                           String signature, String superName, String[] interfaces) {
             Log.logEach('* visit *', Log.accCode2String(access), name, signature, superName, interfaces);
+            lastVisitName = name
+            lastVisitSuperName = superName
+            lastVisitSignature = signature
+            lastVisitInterfaces = interfaces
             super.visit(version, access, name, signature, superName, interfaces);
         }
+
+        private String lastVisitName;
+        private String lastVisitSignature;
+        private String lastVisitSuperName;
+        private String[] lastVisitInterfaces;
 
         @Override
         public MethodVisitor visitMethod(int access, String name,
@@ -145,7 +154,7 @@ public class ModifyClassUtil {
                                         myMv = new MethodLogAdapter(cv.visitMethod(access, name, desc, signature, exceptions));
                                     } else {
                                         try {
-                                            myMv = visit(cv, access, name, desc, signature, exceptions);
+                                            myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                             myMv = null
@@ -154,7 +163,7 @@ public class ModifyClassUtil {
                                 }
                             } else {
                                 try {
-                                    myMv = visit(cv, access, name, desc, signature, exceptions);
+                                    myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     myMv = null
