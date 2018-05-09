@@ -1,5 +1,6 @@
 package com.bryansharp.gradle.hibeaver.utils
 
+import com.bryansharp.gradle.hibeaver.HiBeaverParams
 import org.objectweb.asm.*
 
 /**
@@ -45,7 +46,13 @@ public class ModifyClassUtil {
     private
     static byte[] modifyClass(byte[] srcClass, List<Map<String, Object>> modifyMatchMaps) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        ClassVisitor adapter = new MethodFilterClassVisitor(classWriter, modifyMatchMaps);
+        final ClassVisitor adapter
+        def replace = Util.getHiBeaver().replaceClassVisitor
+        if (replace == null) {
+            adapter = new MethodFilterClassVisitor(classWriter, modifyMatchMaps);
+        } else {
+            adapter = replace.newInstance(classWriter, modifyMatchMaps)
+        }
         ClassReader cr = new ClassReader(srcClass);
         //cr.accept(visitor, ClassReader.SKIP_DEBUG);
         cr.accept(adapter, 0);
@@ -55,7 +62,13 @@ public class ModifyClassUtil {
     private
     static void onlyVisitClassMethod(byte[] srcClass, List<Map<String, Object>> modifyMatchMaps) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        MethodFilterClassVisitor visitor = new MethodFilterClassVisitor(classWriter, modifyMatchMaps);
+        final ClassVisitor visitor
+        def replace = Util.getHiBeaver().replaceClassVisitor
+        if (replace == null) {
+            visitor = new MethodFilterClassVisitor(classWriter, modifyMatchMaps);
+        } else {
+            visitor = replace.newInstance(classWriter, modifyMatchMaps)
+        }
         visitor.onlyVisit = true;
         ClassReader cr = new ClassReader(srcClass);
         cr.accept(visitor, 0);
