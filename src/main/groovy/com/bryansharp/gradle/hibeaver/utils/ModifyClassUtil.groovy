@@ -140,10 +140,10 @@ public class ModifyClassUtil {
             super.visit(version, access, name, signature, superName, interfaces);
         }
 
-        private String lastVisitName;
-        private String lastVisitSignature;
-        private String lastVisitSuperName;
-        private String[] lastVisitInterfaces;
+        String lastVisitName
+        String lastVisitSignature
+        String lastVisitSuperName
+        String[] lastVisitInterfaces
 
         @Override
         public MethodVisitor visitMethod(int access, String name,
