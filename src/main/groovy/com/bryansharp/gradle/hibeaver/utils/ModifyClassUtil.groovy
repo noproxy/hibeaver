@@ -1,6 +1,5 @@
 package com.bryansharp.gradle.hibeaver.utils
 
-import com.bryansharp.gradle.hibeaver.HiBeaverParams
 import org.objectweb.asm.*
 
 /**
@@ -76,8 +75,8 @@ public class ModifyClassUtil {
 
     static class MethodFilterClassVisitor extends ClassVisitor implements Opcodes {
 //        private String className;
-        private List<Map<String, Object>> methodMatchMaps;
-        public boolean onlyVisit = false;
+        List<Map<String, Object>> methodMatchMaps;
+        boolean onlyVisit = false;
 
         public MethodFilterClassVisitor(
                 final ClassVisitor cv, List<Map<String, Object>> methodMatchMaps) {
@@ -152,38 +151,38 @@ public class ModifyClassUtil {
             if (!onlyVisit) {
                 Log.logEach("* visitMethod *", Log.accCode2String(access), name, desc, signature, exceptions);
             }
-            methodMatchMaps.each {
-                Map<String, Object> map ->
-                    String metName = map.get(Const.KEY_METHODNAME);
-                    String metMatchType = map.get(Const.KEY_METHODMATCHTYPE);
-                    String methodDesc = map.get(Const.KEY_METHODDESC);
-                    if (Util.isPatternMatch(metName, metMatchType, name)) {
-                        Closure visit = map.get(Const.KEY_ADAPTER);
-                        if (visit != null) {
-                            //methodDesc 不设置，为空，即代表对methodDesc不限制
-                            if (methodDesc != null) {
-                                if (Util.isPatternMatch(methodDesc, metMatchType, desc)) {
-                                    if (onlyVisit) {
-                                        myMv = new MethodLogAdapter(cv.visitMethod(access, name, desc, signature, exceptions));
-                                    } else {
-                                        try {
-                                            myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            myMv = null
-                                        }
+            for (int i = 0; i < methodMatchMaps.size(); i++) {
+                Map<String, Object> map = methodMatchMaps.get(i)
+                String metName = map.get(Const.KEY_METHODNAME);
+                String metMatchType = map.get(Const.KEY_METHODMATCHTYPE);
+                String methodDesc = map.get(Const.KEY_METHODDESC);
+                if (Util.isPatternMatch(metName, metMatchType, name)) {
+                    Closure visit = map.get(Const.KEY_ADAPTER);
+                    if (visit != null) {
+                        //methodDesc 不设置，为空，即代表对methodDesc不限制
+                        if (methodDesc != null) {
+                            if (Util.isPatternMatch(methodDesc, metMatchType, desc)) {
+                                if (onlyVisit) {
+                                    myMv = new MethodLogAdapter(cv.visitMethod(access, name, desc, signature, exceptions));
+                                } else {
+                                    try {
+                                        myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        myMv = null
                                     }
                                 }
-                            } else {
-                                try {
-                                    myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    myMv = null
-                                }
+                            }
+                        } else {
+                            try {
+                                myMv = visit(cv, access, name, desc, signature, exceptions, lastVisitName, lastVisitSignature, lastVisitSuperName, lastVisitInterfaces);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                myMv = null
                             }
                         }
                     }
+                }
             }
             if (myMv != null) {
                 if (onlyVisit) {

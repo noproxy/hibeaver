@@ -57,6 +57,9 @@ public class InjectTransform extends Transform {
         Log.info "==============hiBeaver ${Util.getHiBeaver().hiBeaverModifyName + ' '}transform enter=============="
 //        String flavorAndBuildType = context.name.split("For")[1]
 //        Log.info("flavorAndBuildType ${flavorAndBuildType}")
+        if (!isIncremental) {
+            outputProvider.deleteAll()
+        }
         Map<String, Object> modifyMatchMaps = Util.getHiBeaver().modifyMatchMaps;
         Util.initTargetClasses(modifyMatchMaps)
         /**
